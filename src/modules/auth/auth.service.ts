@@ -48,7 +48,7 @@ export const loginUserService = async (
 
 export const refreshTokenService = async (refreshToken: string, deviceId: string) => {
     try {
-        const decoded = verifyRefreshToken(refreshToken)
+        const decoded = verifyRefreshToken(refreshToken)       
         const user = await UserModel.findById(decoded._id.toString())
         if (!user) {
             throw new Error("User not found")
@@ -67,7 +67,12 @@ export const refreshTokenService = async (refreshToken: string, deviceId: string
 
         await updateDeviceSession(deviceId, newRefreshToken)
 
-        return { accessToken: newAccessToken, refreshToken: newRefreshToken }
+        return {
+            accessToken: newAccessToken,
+            refreshToken: newRefreshToken,
+            userId: userData._id.toString(),
+            deviceId,
+        }
     } catch (error) {
         if ((error as Error).message.includes("Security alert")) {
             throw error
@@ -77,8 +82,8 @@ export const refreshTokenService = async (refreshToken: string, deviceId: string
 }
 
 export const logoutCurrentDeviceService = async (deviceId: string) => {
-    await logoutCurrentDevice(deviceId)
-    return { message: "Logged out from current device successfully" }
+    const deletedDevice = await logoutCurrentDevice(deviceId)
+    return deletedDevice
 }
 
 export const logoutAllDevicesService = async (userId: string) => {
