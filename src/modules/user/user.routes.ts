@@ -9,5 +9,13 @@ import { validate } from "../../shared/middlewares/validateMiddleware.ts"
 
 const app=Router()
 app.get('/',verifyAuth(),accessRolesMiddleware([USER_ROLES.ADMIN,USER_ROLES.MANAGER,USER_ROLES.USER]),getUserController)
+app.get('/manager/test', verifyAuth(),
+  accessRolesMiddleware([USER_ROLES.ADMIN, USER_ROLES.MANAGER]),
+  (req, res) => res.json({ success: true, message: "Manager area" })
+)
+app.get('/admin/test', verifyAuth(),
+  accessRolesMiddleware([USER_ROLES.ADMIN]),
+  (req, res) => res.json({ success: true, message: "Admin area" })
+)
 app.put('/change-password',verifyAuth(),accessRolesMiddleware([USER_ROLES.ADMIN,USER_ROLES.MANAGER,USER_ROLES.USER]),validate(changePasswordValidate),changePasswordController)
 export default app
