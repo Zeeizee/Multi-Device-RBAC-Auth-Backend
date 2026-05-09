@@ -114,7 +114,7 @@ export const logoutController=async(req:AuthRequest,res:Response)=>{
             sameSite: 'strict'
         })
         
-        console.log('CCCCCCCCCC',req.cookies)
+   
         if(deviceId){
             await logoutCurrentDeviceService(deviceId)
         }

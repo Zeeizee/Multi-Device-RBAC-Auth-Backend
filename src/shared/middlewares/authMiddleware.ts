@@ -6,7 +6,7 @@ interface ITokenPayload {
     _id: string;
     role: string;
     name: string;
-
+    deviceId: string;
 }
 
 export interface AuthRequest extends Request {
@@ -24,14 +24,15 @@ export const verifyAuth=()=>{
             {
                 return res.status(401).json({success:false,message:'Unauthorized'})
             }
-            const decoded=verifyAccessToken(token?.split(' ')[1] || '') as ITokenPayload
-           if(!decoded){
+           
+            const decoded= verifyAccessToken(token?.split(' ')[1] || '') as ITokenPayload
+           
+            if(!decoded){
             return res.status(401).json({success:false,message:'Unauthorized'})
            }
-           
-           // MANDATORY: Check if device session still exists (to expire token immediately after logout)
+         
            const deviceId = req.cookies?.deviceId
-           if(!deviceId){
+           if(!deviceId || deviceId !== decoded.deviceId){
                // No deviceId means session was cleared (logout) - token invalidated immediately
                return res.status(401).json({
                    success: false,

@@ -6,12 +6,14 @@ interface ITokenPayload{
   _id:string,
   role:string,
   name:string,
+  deviceId:string,
 }
 export const getAccessToken = (user: ITokenPayload, ) => {
   const payload = { 
     _id: user._id, 
     role: user.role, 
     name: user.name,
+    deviceId: user.deviceId,
    
   }
   return jwt.sign(payload, config.JWT_ACCESS_SECRET, { expiresIn: '15m' }) 
@@ -22,7 +24,7 @@ export const getRefreshToken=(user:ITokenPayload)=>{
   return jwt.sign(payload,config.JWT_REFRESH_SECRET,{expiresIn:'7d'})
 }
 
-export const verifyAccessToken=(token:string)=>{
+export const verifyAccessToken=(token:string)=>{  
   return jwt.verify(token,config.JWT_ACCESS_SECRET)
 }
 
