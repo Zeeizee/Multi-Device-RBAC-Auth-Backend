@@ -31,7 +31,7 @@ app.get('/',(_,res)=>{
 })
 app.use('/api/auth',authRoutes)
 app.use('/api/user',userRoutes)
-app.use('/api/device',deviceRoutes)
+app.use('/api/devices',deviceRoutes)
 app.use('/api/audit',auditRoutes)
 
 export default app
