@@ -5,7 +5,7 @@ import { verifyAuth } from '../../shared/middlewares/authMiddleware.ts';
 const deviceRouter = Router();
 
 // Get all active devices for current user
-deviceRouter.get('/devices', verifyAuth(), getActiveDevicesController);
+deviceRouter.get('/all', verifyAuth(), getActiveDevicesController);
 
 // Logout from current device
 deviceRouter.post('/logout/current', verifyAuth(), logoutCurrentDeviceController);
