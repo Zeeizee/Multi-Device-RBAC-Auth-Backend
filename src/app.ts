@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser'
 import authRoutes from './modules/auth/auth.routes.ts'
 import userRoutes from './modules/user/user.routes.ts'
 import deviceRoutes from './modules/device/device.routes.ts'
+import auditRoutes from './modules/audit/audit.routes.ts'
 import { rateLimiterMiddleware } from './shared/middlewares/rateLimit.ts'
 
 
@@ -30,6 +31,7 @@ app.get('/',(_,res)=>{
 })
 app.use('/api/auth',authRoutes)
 app.use('/api/user',userRoutes)
-app.use('/api',deviceRoutes)
+app.use('/api/devices',deviceRoutes)
+app.use('/api/audit',auditRoutes)
 
 export default app

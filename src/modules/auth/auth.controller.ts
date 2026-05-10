@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { loginUserService, signupUserService, refreshTokenService, logoutCurrentDeviceService, logoutAllDevicesService } from "./auth.service.ts";
 import { AuthRequest } from "../../shared/middlewares/authMiddleware.ts";
+import { writeAuditLog } from "../audit/audit.service.ts";
 
 export const signupUserController=async(req:Request,res:Response)=>{
    
@@ -19,8 +20,15 @@ export const loginUserController=async(req:Request,res:Response)=>{
         const userAgent = req.get('user-agent') || 'unknown'
         
         const result=await loginUserService(email,password,IP,userAgent)
-        
-     
+
+        await writeAuditLog({
+            userId: result.user._id.toString(),
+            action: "login",
+            IP,
+            deviceId: result.deviceId,
+            userAgent,
+        })
+
         res.cookie('refreshToken', result.refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -60,8 +68,18 @@ export const refreshTokenController=async(req:Request,res:Response)=>{
         }
         
         const tokens=await refreshTokenService(refreshToken, deviceId)
-        
-        
+
+        const IP = req.ip || req.socket.remoteAddress || 'unknown'
+        const userAgent = req.get('user-agent') || 'unknown'
+
+        await writeAuditLog({
+            userId: tokens.userId,
+            action: "refresh_token",
+            IP,
+            deviceId: tokens.deviceId,
+            userAgent,
+        })
+
         res.cookie('refreshToken', tokens.refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -101,8 +119,7 @@ export const refreshTokenController=async(req:Request,res:Response)=>{
 export const logoutController=async(req:AuthRequest,res:Response)=>{
     try {
         const deviceId = req.cookies?.deviceId
-        
-      
+
         res.clearCookie('refreshToken', {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -113,16 +130,37 @@ export const logoutController=async(req:AuthRequest,res:Response)=>{
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict'
         })
-        
-   
+
         if(deviceId){
-            await logoutCurrentDeviceService(deviceId)
+            const deletedDevice = await logoutCurrentDeviceService(deviceId)
+
+            if (deletedDevice) {
+                await writeAuditLog({
+                    userId: deletedDevice.userId.toString(),
+                    action: "logout",
+                    IP: deletedDevice.IP,
+                    deviceId: deletedDevice.deviceId,
+                    userAgent: deletedDevice.userAgent,
+                })
+            }
         }
-        
+
         return res.status(200).json({
             success: true,
             message: "Logged out successfully"
         })
+    } catch (error) {
+        return res.status(500).json({success:false,message:(error as Error).message})
+    }
+}
+
+export const logoutAllDevicesController=async(req:AuthRequest,res:Response)=>{
+    try {
+        const userId = req.user?._id
+        if(!userId){
+            return res.status(401).json({success:false,message:"User not authenticated"})
+        }
+        await logoutAllDevicesService(userId)
     } catch (error) {
         return res.status(500).json({success:false,message:(error as Error).message})
     }
