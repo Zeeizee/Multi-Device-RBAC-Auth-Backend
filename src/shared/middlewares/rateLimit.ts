@@ -1,4 +1,4 @@
-import rateLimit from 'express-rate-limit'
+import { rateLimit } from 'express-rate-limit'
 
 interface RateLimitOptions {
   time?: number; 
